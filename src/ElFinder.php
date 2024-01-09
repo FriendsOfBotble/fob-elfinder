@@ -49,7 +49,7 @@ class ElFinder
 
     public function getTrashRoot(): string
     {
-        return storage_path('app/public/.trash');
+        return $this->getRoot() . '/.trash';
     }
 
     public function getRoot(): string

@@ -8,6 +8,7 @@ use Botble\Base\PanelSections\PanelSectionItem;
 use Botble\Base\Supports\ServiceProvider;
 use Botble\Base\Traits\LoadAndPublishDataTrait;
 use Botble\Setting\PanelSections\SettingOthersPanelSection;
+use FriendsOfBotble\ElFinder\ElFinder;
 use Illuminate\Routing\Events\RouteMatched;
 
 class ElFinderServiceProvider extends ServiceProvider
@@ -24,7 +25,7 @@ class ElFinderServiceProvider extends ServiceProvider
             ->loadAndPublishViews()
             ->publishAssets();
 
-        require_once __DIR__ . '/../../connector/autoload.php';
+        $this->app['files']->requireOnce(__DIR__ . '/../../connector/autoload.php');
 
         $this->app['events']->listen(RouteMatched::class, function () {
             $this->app['elfinder']->registerConnectorScript();
@@ -76,10 +77,10 @@ class ElFinderServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton('elfinder', function () {
-            return new \FriendsOfBotble\ElFinder\ElFinder($this->app);
+            return new ElFinder($this->app);
         });
 
-        $this->app->alias('elfinder', \FriendsOfBotble\ElFinder\ElFinder::class);
+        $this->app->alias('elfinder', ElFinder::class);
 
         $this->app->instance('elfinder.assets.registered', false);
         $this->app->instance('elfinder.connector.registered', false);
