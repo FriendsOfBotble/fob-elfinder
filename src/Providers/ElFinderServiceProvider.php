@@ -68,7 +68,7 @@ class ElFinderServiceProvider extends ServiceProvider
                     'icon' => 'ti ti-folder',
                     'name' => $replaceDefaultMedia ? 'core/media::media.menu_name' : 'plugins/elfinder::elfinder.menu_name',
                     'route' => 'elfinder.index',
-                    'permissions' => ['media.index'],
+                    'permissions' => ['elfinder.index'],
                 ]);
         });
     }

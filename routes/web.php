@@ -8,7 +8,7 @@ use FriendsOfBotble\ElFinder\Http\Controllers\ElFinderSettingController;
 use Illuminate\Support\Facades\Route;
 
 AdminHelper::registerRoutes(function () {
-    Route::group(['prefix' => 'elfinder', 'as' => 'elfinder.', 'permission' => false], function () {
+    Route::group(['prefix' => 'elfinder', 'as' => 'elfinder.', 'permission' => 'elfinder.index'], function () {
         Route::get('', [ElFinderController::class, 'index'])
             ->name('index');
 
