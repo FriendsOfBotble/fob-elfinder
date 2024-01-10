@@ -72,7 +72,12 @@ class ElFinder
         ]);
 
         if (setting('elfinder_replace_default_media', false)) {
-            $this->container['config']->set('filesystems.default', 'elfinder');
+            $this->setDefaultDisk();
         }
+    }
+
+    public function setDefaultDisk(): void
+    {
+        $this->container['config']->set('filesystems.default', 'elfinder');
     }
 }

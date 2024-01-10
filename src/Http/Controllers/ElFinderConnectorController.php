@@ -91,7 +91,7 @@ class ElFinderConnectorController extends BaseController
     {
         $defaultDisk = config('filesystems.default');
 
-        config()->set('filesystems.default', 'elfinder');
+        $this->elFinder->setDefaultDisk();
 
         foreach (RvMedia::getSizes() as $size) {
             $readableSize = explode('x', $size);

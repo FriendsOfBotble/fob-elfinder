@@ -41,9 +41,9 @@ class ElFinderServiceProvider extends ServiceProvider
 
                 return $rendered;
             }, 120);
-
-            $this->app['elfinder']->registerFilesystemDisk();
         });
+
+        $this->app->booted(fn ($app) => $app['elfinder']->registerFilesystemDisk());
 
         PanelSectionManager::default()->beforeRendering(function () {
             PanelSectionManager::registerItem(
