@@ -3,11 +3,11 @@
 namespace FriendsOfBotble\ElFinder\Http\Requests;
 
 use Botble\Base\Rules\OnOffRule;
+use Botble\Support\Http\Requests\Request;
 use Closure;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 
-class ElFinderSettingRequest extends FormRequest
+class ElFinderSettingRequest extends Request
 {
     public function rules(): array
     {
