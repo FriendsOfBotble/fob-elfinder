@@ -2,16 +2,16 @@
 
 class elFinderEditorOnlineConvert extends elFinderEditor
 {
-    protected $allowed = array('init', 'api');
+    protected $allowed = ['init', 'api'];
 
     public function enabled()
     {
-        return defined('ELFINDER_ONLINE_CONVERT_APIKEY') && ELFINDER_ONLINE_CONVERT_APIKEY && (!defined('ELFINDER_DISABLE_ONLINE_CONVERT') || !ELFINDER_DISABLE_ONLINE_CONVERT);
+        return defined('ELFINDER_ONLINE_CONVERT_APIKEY') && ELFINDER_ONLINE_CONVERT_APIKEY && (! defined('ELFINDER_DISABLE_ONLINE_CONVERT') || ! ELFINDER_DISABLE_ONLINE_CONVERT);
     }
 
     public function init()
     {
-        return array('api' => defined('ELFINDER_ONLINE_CONVERT_APIKEY') && ELFINDER_ONLINE_CONVERT_APIKEY && function_exists('curl_init'));
+        return ['api' => defined('ELFINDER_ONLINE_CONVERT_APIKEY') && ELFINDER_ONLINE_CONVERT_APIKEY && function_exists('curl_init')];
     }
 
     public function api()
@@ -26,23 +26,23 @@ class elFinderEditorOnlineConvert extends elFinderEditor
         $mime = $this->argValue('mime');
         $jobid = $this->argValue('jobid');
         $string_method = '';
-        $options = array();
+        $options = [];
         // Currently these converts are make error with API call. I don't know why.
-        $nonApi = array('android', 'blackberry', 'dpg', 'ipad', 'iphone', 'ipod', 'nintendo-3ds', 'nintendo-ds', 'ps3', 'psp', 'wii', 'xbox');
+        $nonApi = ['android', 'blackberry', 'dpg', 'ipad', 'iphone', 'ipod', 'nintendo-3ds', 'nintendo-ds', 'ps3', 'psp', 'wii', 'xbox'];
         if (in_array($convert, $nonApi)) {
-            return array('apires' => array());
+            return ['apires' => []];
         }
         $ch = null;
         if ($convert && $source) {
-            $request = array(
-                'input' => array(array(
+            $request = [
+                'input' => [[
                     'type' => 'remote',
-                    'source' => $source
-                )),
-                'conversion' => array(array(
-                    'target' => $convert
-                ))
-            );
+                    'source' => $source,
+                ]],
+                'conversion' => [[
+                    'target' => $convert,
+                ]],
+            ];
 
             if ($filename !== '') {
                 $request['input'][0]['filename'] = $filename;
@@ -59,30 +59,30 @@ class elFinderEditorOnlineConvert extends elFinderEditor
             if ($options && $options !== 'null') {
                 $options = json_decode($options, true);
             }
-            if (!is_array($options)) {
-                $options = array();
+            if (! is_array($options)) {
+                $options = [];
             }
             if ($options) {
                 $request['conversion'][0]['options'] = $options;
             }
 
             $ch = curl_init($endpoint);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($request));
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
                 'X-Oc-Api-Key: ' . ELFINDER_ONLINE_CONVERT_APIKEY,
                 'Content-Type: application/json',
-                'cache-control: no-cache'
-            ));
-        } else if ($jobid) {
+                'cache-control: no-cache',
+            ]);
+        } elseif ($jobid) {
             $ch = curl_init($endpoint . '/' . $jobid);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
                 'X-Oc-Api-Key: ' . ELFINDER_ONLINE_CONVERT_APIKEY,
-                'cache-control: no-cache'
-            ));
+                'cache-control: no-cache',
+            ]);
         }
 
         if ($ch) {
@@ -91,23 +91,23 @@ class elFinderEditorOnlineConvert extends elFinderEditor
             $error = curl_error($ch);
             curl_close($ch);
 
-            if (!empty($error)) {
-                $res = array('error' => $error);
+            if (! empty($error)) {
+                $res = ['error' => $error];
             } else {
                 $data = json_decode($response, true);
                 if (isset($data['status']) && isset($data['status']['code']) && $data['status']['code'] === 'completed') {
                     /** @var elFinderSession $session */
                     $session = $this->elfinder->getSession();
-                    $urlContentSaveIds = $session->get('urlContentSaveIds', array());
+                    $urlContentSaveIds = $session->get('urlContentSaveIds', []);
                     $urlContentSaveIds['OnlineConvert-' . $data['id']] = true;
                     $session->set('urlContentSaveIds', $urlContentSaveIds);
                 }
-                $res = array('apires' => $data);
+                $res = ['apires' => $data];
             }
 
             return $res;
         } else {
-            return array('error' => array('errCmdParams', 'editor.OnlineConvert.api'));
+            return ['error' => ['errCmdParams', 'editor.OnlineConvert.api']];
         }
     }
 }

@@ -69,12 +69,11 @@
  */
 class elFinderPluginWatermark extends elFinderPlugin
 {
-
     private $watermarkImgInfo = null;
 
     public function __construct($opts)
     {
-        $defaults = array(
+        $defaults = [
             'enable' => true,       // For control by volume driver
             'source' => 'logo.png', // Path to Water mark image
             'ratio' => 0.2,        // Ratio to original image (ratio > 0 and ratio <= 1)
@@ -91,8 +90,8 @@ class elFinderPluginWatermark extends elFinderPlugin
             // In case of using any key, specify it as an array
             'marginRight' => 0,          // Deprecated - marginX should be used
             'marginBottom' => 0,          // Deprecated - marginY should be used
-            'disableWithContentSaveId' => true // Disable on URL upload with post data "contentSaveId"
-        );
+            'disableWithContentSaveId' => true, // Disable on URL upload with post data "contentSaveId"
+        ];
 
         $this->opts = array_merge($defaults, $opts);
 
@@ -100,13 +99,13 @@ class elFinderPluginWatermark extends elFinderPlugin
 
     public function onUpLoadPreSave(&$thash, &$name, $src, $elfinder, $volume)
     {
-        if (!$src) {
+        if (! $src) {
             return false;
         }
 
         $opts = $this->getCurrentOpts($volume);
 
-        if (!$this->iaEnabled($opts, $elfinder)) {
+        if (! $this->iaEnabled($opts, $elfinder)) {
             return false;
         }
 
@@ -132,14 +131,14 @@ class elFinderPluginWatermark extends elFinderPlugin
         }
 
         // check target image type
-        $imgTypes = array(
+        $imgTypes = [
             IMAGETYPE_GIF => IMG_GIF,
             IMAGETYPE_JPEG => IMG_JPEG,
             IMAGETYPE_PNG => IMG_PNG,
             IMAGETYPE_BMP => IMG_WBMP,
-            IMAGETYPE_WBMP => IMG_WBMP
-        );
-        if (!isset($imgTypes[$imageType]) || !($opts['targetType'] & $imgTypes[$imageType])) {
+            IMAGETYPE_WBMP => IMG_WBMP,
+        ];
+        if (! isset($imgTypes[$imageType]) || ! ($opts['targetType'] & $imgTypes[$imageType])) {
             return false;
         }
 
@@ -152,19 +151,19 @@ class elFinderPluginWatermark extends elFinderPlugin
             return false;
         }
         // check water mark image
-        if (!file_exists($opts['source'])) {
-            $opts['source'] = dirname(__FILE__) . "/" . $opts['source'];
+        if (! file_exists($opts['source'])) {
+            $opts['source'] = dirname(__FILE__) . '/' . $opts['source'];
         }
         if (is_readable($opts['source'])) {
             $watermarkImgInfo = getimagesize($opts['source']);
-            if (!$watermarkImgInfo) {
+            if (! $watermarkImgInfo) {
                 return false;
             }
         } else {
             return false;
         }
 
-        if (!$srcImgInfo) {
+        if (! $srcImgInfo) {
             $srcImgInfo = getimagesize($src);
         }
 
@@ -188,7 +187,7 @@ class elFinderPluginWatermark extends elFinderPlugin
             if (($maxW >= $watermarkImgInfo[0] && $maxH >= $watermarkImgInfo[0]) || ($maxW <= $watermarkImgInfo[0] && $maxH <= $watermarkImgInfo[0])) {
                 $dx = abs($srcImgInfo[0] - $watermarkImgInfo[0]);
                 $dy = abs($srcImgInfo[1] - $watermarkImgInfo[1]);
-            } else if ($maxW < $watermarkImgInfo[0]) {
+            } elseif ($maxW < $watermarkImgInfo[0]) {
                 $dx = -1;
             } else {
                 $dy = -1;
@@ -212,7 +211,7 @@ class elFinderPluginWatermark extends elFinderPlugin
         if (strpos($opts['position'], 'T') !== false) {
             // Top
             $dest_x = $opts['marginX'];
-        } else if (strpos($opts['position'], 'M') !== false) {
+        } elseif (strpos($opts['position'], 'M') !== false) {
             // Middle
             $dest_x = ($srcImgInfo[0] - $watermarkImgInfo[0]) / 2;
         } else {
@@ -224,14 +223,13 @@ class elFinderPluginWatermark extends elFinderPlugin
         if (strpos($opts['position'], 'L') !== false) {
             // Left
             $dest_y = $opts['marginY'];
-        } else if (strpos($opts['position'], 'C') !== false) {
+        } elseif (strpos($opts['position'], 'C') !== false) {
             // Middle
             $dest_y = ($srcImgInfo[1] - $watermarkImgInfo[1]) / 2;
         } else {
             // Right
             $dest_y = $srcImgInfo[1] - $watermarkImgInfo[1] - max($opts['marginRight'], $opts['marginY']);
         }
-
 
         // check interlace
         $opts['interlace'] = ($opts['interlace'] & $imgTypes[$imageType]);
@@ -240,8 +238,9 @@ class elFinderPluginWatermark extends elFinderPlugin
         //if (class_exists('Imagick', false)) {
         //    return $this->watermarkPrint_imagick($src, $watermark, $dest_x, $dest_y, $quality, $transparency, $watermarkImgInfo, $opts);
         //} else {
-            elFinder::expandMemoryForGD(array($watermarkImgInfo, $srcImgInfo));
-            return $this->watermarkPrint_gd($src, $watermark, $dest_x, $dest_y, $quality, $transparency, $watermarkImgInfo, $srcImgInfo, $opts);
+        elFinder::expandMemoryForGD([$watermarkImgInfo, $srcImgInfo]);
+
+        return $this->watermarkPrint_gd($src, $watermark, $dest_x, $dest_y, $quality, $transparency, $watermarkImgInfo, $srcImgInfo, $opts);
         //}
     }
 
@@ -289,6 +288,7 @@ class elFinderPluginWatermark extends elFinderPlugin
         } catch (Exception $e) {
             $ermsg = $e->getMessage();
             $ermsg && trigger_error($ermsg);
+
             return false;
         }
     }
@@ -307,6 +307,7 @@ class elFinderPluginWatermark extends elFinderPlugin
                 } else {
                     $ermsg = 'GIF images are not supported as watermark image';
                 }
+
                 break;
             case 'image/jpeg':
                 if (imagetypes() & IMG_JPG) {
@@ -314,6 +315,7 @@ class elFinderPluginWatermark extends elFinderPlugin
                 } else {
                     $ermsg = 'JPEG images are not supported as watermark image';
                 }
+
                 break;
             case 'image/png':
                 if (imagetypes() & IMG_PNG) {
@@ -321,6 +323,7 @@ class elFinderPluginWatermark extends elFinderPlugin
                 } else {
                     $ermsg = 'PNG images are not supported as watermark image';
                 }
+
                 break;
             case 'image/wbmp':
                 if (imagetypes() & IMG_WBMP) {
@@ -328,22 +331,23 @@ class elFinderPluginWatermark extends elFinderPlugin
                 } else {
                     $ermsg = 'WBMP images are not supported as watermark image';
                 }
+
                 break;
             default:
                 $oWatermarkImg = false;
                 $ermsg = $watermarkImgInfo['mime'] . ' images are not supported as watermark image';
+
                 break;
         }
 
-
-        if (!$ermsg) {
+        if (! $ermsg) {
             // zoom
             if ($opts['ratio']) {
                 $tmpImg = imagecreatetruecolor($watermarkImgInfo[0], $watermarkImgInfo[1]);
                 imagealphablending($tmpImg, false);
                 imagesavealpha($tmpImg, true);
                 imagecopyresampled($tmpImg, $oWatermarkImg, 0, 0, 0, 0, $watermarkImgInfo[0], $watermarkImgInfo[1], imagesx($oWatermarkImg), imagesy($oWatermarkImg));
-                imageDestroy($oWatermarkImg);
+                imagedestroy($oWatermarkImg);
                 $oWatermarkImg = $tmpImg;
                 $tmpImg = null;
             }
@@ -355,6 +359,7 @@ class elFinderPluginWatermark extends elFinderPlugin
                     } else {
                         $ermsg = 'GIF images are not supported as source image';
                     }
+
                     break;
                 case 'image/jpeg':
                     if (imagetypes() & IMG_JPG) {
@@ -362,6 +367,7 @@ class elFinderPluginWatermark extends elFinderPlugin
                     } else {
                         $ermsg = 'JPEG images are not supported as source image';
                     }
+
                     break;
                 case 'image/png':
                     if (imagetypes() & IMG_PNG) {
@@ -369,6 +375,7 @@ class elFinderPluginWatermark extends elFinderPlugin
                     } else {
                         $ermsg = 'PNG images are not supported as source image';
                     }
+
                     break;
                 case 'image/wbmp':
                     if (imagetypes() & IMG_WBMP) {
@@ -376,16 +383,19 @@ class elFinderPluginWatermark extends elFinderPlugin
                     } else {
                         $ermsg = 'WBMP images are not supported as source image';
                     }
+
                     break;
                 default:
                     $oSrcImg = false;
                     $ermsg = $srcImgInfo['mime'] . ' images are not supported as source image';
+
                     break;
             }
         }
 
         if ($ermsg || false === $oSrcImg || false === $oWatermarkImg) {
             $ermsg && trigger_error($ermsg);
+
             return false;
         }
 
@@ -408,9 +418,11 @@ class elFinderPluginWatermark extends elFinderPlugin
         switch ($srcImgInfo['mime']) {
             case 'image/gif':
                 imagegif($oSrcImg, $src);
+
                 break;
             case 'image/jpeg':
                 imagejpeg($oSrcImg, $src, $quality);
+
                 break;
             case 'image/png':
                 if (function_exists('imagesavealpha') && function_exists('imagealphablending')) {
@@ -418,14 +430,16 @@ class elFinderPluginWatermark extends elFinderPlugin
                     imagesavealpha($oSrcImg, true);
                 }
                 imagepng($oSrcImg, $src);
+
                 break;
             case 'image/wbmp':
                 imagewbmp($oSrcImg, $src);
+
                 break;
         }
 
-        imageDestroy($oSrcImg);
-        imageDestroy($oWatermarkImg);
+        imagedestroy($oSrcImg);
+        imagedestroy($oWatermarkImg);
 
         return true;
     }

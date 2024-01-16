@@ -9,13 +9,12 @@
  */
 class elFinderPlugin
 {
-
     /**
      * This plugin's options
      *
      * @var array
      */
-    protected $opts = array();
+    protected $opts = [];
 
     /**
      * Get current volume's options
@@ -34,6 +33,7 @@ class elFinderPlugin
                 $opts = array_merge($opts, $volOpts);
             }
         }
+
         return $opts;
     }
 
@@ -47,29 +47,30 @@ class elFinderPlugin
      */
     protected function iaEnabled($opts, $elfinder = null)
     {
-        if (!$opts['enable']) {
+        if (! $opts['enable']) {
             return false;
         }
 
         // check post var 'contentSaveId' to disable this plugin
-        if ($elfinder && !empty($opts['disableWithContentSaveId'])) {
+        if ($elfinder && ! empty($opts['disableWithContentSaveId'])) {
             $session = $elfinder->getSession();
-            $urlContentSaveIds = $session->get('urlContentSaveIds', array());
-            if (!empty(elFinder::$currentArgs['contentSaveId']) && ($contentSaveId = elFinder::$currentArgs['contentSaveId'])) {
-                if (!empty($urlContentSaveIds[$contentSaveId])) {
+            $urlContentSaveIds = $session->get('urlContentSaveIds', []);
+            if (! empty(elFinder::$currentArgs['contentSaveId']) && ($contentSaveId = elFinder::$currentArgs['contentSaveId'])) {
+                if (! empty($urlContentSaveIds[$contentSaveId])) {
                     $elfinder->removeUrlContentSaveId($contentSaveId);
+
                     return false;
                 }
             }
         }
 
-        if (isset($opts['onDropWith']) && !is_null($opts['onDropWith'])) {
+        if (isset($opts['onDropWith']) && ! is_null($opts['onDropWith'])) {
             // plugin disabled by default, enabled only if given key is pressed
             if (isset($_REQUEST['dropWith']) && $_REQUEST['dropWith']) {
                 $onDropWith = $opts['onDropWith'];
                 $action = (int)$_REQUEST['dropWith'];
-                if (!is_array($onDropWith)) {
-                    $onDropWith = array($onDropWith);
+                if (! is_array($onDropWith)) {
+                    $onDropWith = [$onDropWith];
                 }
                 foreach ($onDropWith as $key) {
                     $key = (int)$key;
@@ -78,15 +79,16 @@ class elFinderPlugin
                     }
                 }
             }
+
             return false;
         }
 
-        if (isset($opts['offDropWith']) && !is_null($opts['offDropWith']) && isset($_REQUEST['dropWith'])) {
+        if (isset($opts['offDropWith']) && ! is_null($opts['offDropWith']) && isset($_REQUEST['dropWith'])) {
             // plugin enabled by default, disabled only if given key is pressed
             $offDropWith = $opts['offDropWith'];
             $action = (int)$_REQUEST['dropWith'];
-            if (!is_array($offDropWith)) {
-                $offDropWith = array($offDropWith);
+            if (! is_array($offDropWith)) {
+                $offDropWith = [$offDropWith];
             }
             $res = true;
             foreach ($offDropWith as $key) {
@@ -94,16 +96,18 @@ class elFinderPlugin
                 if ($key === 0) {
                     if ($action === 0) {
                         $res = false;
+
                         break;
                     }
                 } else {
                     if (($action & $key) === $key) {
                         $res = false;
+
                         break;
                     }
                 }
             }
-            if (!$res) {
+            if (! $res) {
                 return false;
             }
         }

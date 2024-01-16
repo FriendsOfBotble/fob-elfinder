@@ -51,17 +51,16 @@
  */
 class elFinderPluginAutoRotate extends elFinderPlugin
 {
-
     public function __construct($opts)
     {
-        $defaults = array(
+        $defaults = [
             'enable' => true,       // For control by volume driver
             'quality' => 95,         // JPEG image save quality
             'offDropWith' => null,       // To disable it if it is dropped with pressing the meta key
             // Alt: 8, Ctrl: 4, Meta: 2, Shift: 1 - sum of each value
             // In case of using any key, specify it as an array
-            'disableWithContentSaveId' => true // Disable on URL upload with post data "contentSaveId"
-        );
+            'disableWithContentSaveId' => true, // Disable on URL upload with post data "contentSaveId"
+        ];
 
         $this->opts = array_merge($defaults, $opts);
 
@@ -69,13 +68,13 @@ class elFinderPluginAutoRotate extends elFinderPlugin
 
     public function onUpLoadPreSave(&$thash, &$name, $src, $elfinder, $volume)
     {
-        if (!$src) {
+        if (! $src) {
             return false;
         }
 
         $opts = $this->getCurrentOpts($volume);
 
-        if (!$this->iaEnabled($opts, $elfinder)) {
+        if (! $this->iaEnabled($opts, $elfinder)) {
             return false;
         }
 
@@ -105,7 +104,7 @@ class elFinderPluginAutoRotate extends elFinderPlugin
             return false;
         }
 
-        if (!$srcImgInfo) {
+        if (! $srcImgInfo) {
             $srcImgInfo = getimagesize($src);
         }
 
@@ -114,7 +113,7 @@ class elFinderPluginAutoRotate extends elFinderPlugin
 
     private function rotate($volume, $src, $srcImgInfo, $quality)
     {
-        if (!function_exists('exif_read_data')) {
+        if (! function_exists('exif_read_data')) {
             return false;
         }
         $degree = 0;
@@ -122,27 +121,31 @@ class elFinderPluginAutoRotate extends elFinderPlugin
         error_reporting($errlev ^ E_WARNING);
         $exif = exif_read_data($src);
         error_reporting($errlev);
-        if ($exif && !empty($exif['Orientation'])) {
+        if ($exif && ! empty($exif['Orientation'])) {
             switch ($exif['Orientation']) {
                 case 8:
                     $degree = 270;
+
                     break;
                 case 3:
                     $degree = 180;
+
                     break;
                 case 6:
                     $degree = 90;
+
                     break;
             }
         }
-        if (!$degree)  {
+        if (! $degree) {
             return false;
         }
-        $opts = array(
+        $opts = [
             'degree' => $degree,
             'jpgQuality' => $quality,
-            'checkAnimated' => true
-        );
+            'checkAnimated' => true,
+        ];
+
         return $volume->imageUtil('rotate', $src, $opts);
     }
 }

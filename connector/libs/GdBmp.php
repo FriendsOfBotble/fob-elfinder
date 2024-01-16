@@ -58,7 +58,7 @@
  * @return bool|resource
  */
 
-if (!function_exists('imagecreatefrombmp')) {
+if (! function_exists('imagecreatefrombmp')) {
     function imagecreatefrombmp($filename_or_stream_or_binary)
     {
         return elFinderLibGdBmp::load($filename_or_stream_or_binary);
@@ -71,18 +71,19 @@ class elFinderLibGdBmp
     {
         if (is_resource($filename_or_stream_or_binary)) {
             return self::loadFromStream($filename_or_stream_or_binary);
-        } else if (is_string($filename_or_stream_or_binary) && strlen($filename_or_stream_or_binary) >= 26) {
-            $bfh = unpack("vtype/Vsize", $filename_or_stream_or_binary);
-            if ($bfh["type"] == 0x4d42 && ($bfh["size"] == 0 || $bfh["size"] == strlen($filename_or_stream_or_binary))) {
+        } elseif (is_string($filename_or_stream_or_binary) && strlen($filename_or_stream_or_binary) >= 26) {
+            $bfh = unpack('vtype/Vsize', $filename_or_stream_or_binary);
+            if ($bfh['type'] == 0x4d42 && ($bfh['size'] == 0 || $bfh['size'] == strlen($filename_or_stream_or_binary))) {
                 return self::loadFromString($filename_or_stream_or_binary);
             }
         }
+
         return self::loadFromFile($filename_or_stream_or_binary);
     }
 
     public static function loadFromFile($filename)
     {
-        $fp = fopen($filename, "rb");
+        $fp = fopen($filename, 'rb');
         if ($fp === false) {
             return false;
         }
@@ -90,30 +91,34 @@ class elFinderLibGdBmp
         $bmp = self::loadFromStream($fp);
 
         fclose($fp);
+
         return $bmp;
     }
 
     public static function loadFromString($str)
     {
         //data scheme より古いバージョンから対応しているようなので php://memory を使う
-        $fp = fopen("php://memory", "r+b");
+        $fp = fopen('php://memory', 'r+b');
         if ($fp === false) {
             return false;
         }
 
         if (fwrite($fp, $str) != strlen($str)) {
             fclose($fp);
+
             return false;
         }
 
         if (fseek($fp, 0) === -1) {
             fclose($fp);
+
             return false;
         }
 
         $bmp = self::loadFromStream($fp);
 
         fclose($fp);
+
         return $bmp;
     }
 
@@ -130,12 +135,13 @@ class elFinderLibGdBmp
         }
 
         $bitmap_file_header = unpack(
-        //BITMAPFILEHEADER構造体
-            "vtype/" .
-            "Vsize/" .
-            "vreserved1/" .
-            "vreserved2/" .
-            "Voffbits", $buf
+            //BITMAPFILEHEADER構造体
+            'vtype/' .
+            'Vsize/' .
+            'vreserved1/' .
+            'vreserved2/' .
+            'Voffbits',
+            $buf
         );
 
         return self::loadFromStreamAndFileHeader($stream, $bitmap_file_header);
@@ -143,7 +149,7 @@ class elFinderLibGdBmp
 
     public static function loadFromStreamAndFileHeader($stream, array $bitmap_file_header)
     {
-        if ($bitmap_file_header["type"] != 0x4d42) {
+        if ($bitmap_file_header['type'] != 0x4d42) {
             return false;
         }
 
@@ -152,8 +158,7 @@ class elFinderLibGdBmp
         if ($buf === false) {
             return false;
         }
-        list(, $header_size) = unpack("V", $buf);
-
+        list(, $header_size) = unpack('V', $buf);
 
         if ($header_size == 12) {
             $buf = fread($stream, $header_size - 4);
@@ -162,11 +167,12 @@ class elFinderLibGdBmp
             }
 
             extract(unpack(
-            //BITMAPCOREHEADER構造体 - OS/2 Bitmap
-                "vwidth/" .
-                "vheight/" .
-                "vplanes/" .
-                "vbit_count", $buf
+                //BITMAPCOREHEADER構造体 - OS/2 Bitmap
+                'vwidth/' .
+                'vheight/' .
+                'vplanes/' .
+                'vbit_count',
+                $buf
             ));
             //飛んでこない分は 0 で初期化しておく
             $clr_used = $clr_important = $alpha_mask = $compression = 0;
@@ -175,7 +181,7 @@ class elFinderLibGdBmp
             $red_mask = 0x00ff0000;
             $green_mask = 0x0000ff00;
             $blue_mask = 0x000000ff;
-        } else if (124 < $header_size || $header_size < 40) {
+        } elseif (124 < $header_size || $header_size < 40) {
             //未知の形式
             return false;
         } else {
@@ -187,16 +193,17 @@ class elFinderLibGdBmp
 
             //BITMAPINFOHEADER構造体 - Windows Bitmap
             extract(unpack(
-                "Vwidth/" .
-                "Vheight/" .
-                "vplanes/" .
-                "vbit_count/" .
-                "Vcompression/" .
-                "Vsize_image/" .
-                "Vx_pels_per_meter/" .
-                "Vy_pels_per_meter/" .
-                "Vclr_used/" .
-                "Vclr_important", $buf
+                'Vwidth/' .
+                'Vheight/' .
+                'vplanes/' .
+                'vbit_count/' .
+                'Vcompression/' .
+                'Vsize_image/' .
+                'Vx_pels_per_meter/' .
+                'Vy_pels_per_meter/' .
+                'Vclr_used/' .
+                'Vclr_important',
+                $buf
             ));
             /**
              * @var integer $width
@@ -227,10 +234,10 @@ class elFinderLibGdBmp
             //ファイルによっては BITMAPINFOHEADER のサイズがおかしい（書き込み間違い？）ケースがある
             //自分でファイルサイズを元に逆算することで回避できることもあるので再計算できそうなら正当性を調べる
             //シークできないストリームの場合全体のファイルサイズは取得できないので、$bitmap_file_headerにサイズ申告がなければやらない
-            if ($bitmap_file_header["size"] != 0) {
+            if ($bitmap_file_header['size'] != 0) {
                 $colorsize = $bit_count == 1 || $bit_count == 4 || $bit_count == 8 ? ($clr_used ? $clr_used : pow(2, $bit_count)) << 2 : 0;
                 $bodysize = $size_image ? $size_image : ((($width * $bit_count + 31) >> 3) & ~3) * abs($height);
-                $calcsize = $bitmap_file_header["size"] - $bodysize - $colorsize - 14;
+                $calcsize = $bitmap_file_header['size'] - $bodysize - $colorsize - 14;
 
                 //本来であれば一致するはずなのに合わない時は、値がおかしくなさそうなら（BITMAPV5HEADERの範囲内なら）計算して求めた値を採用する
                 if ($header_size < $calcsize && 40 <= $header_size && $header_size <= 124) {
@@ -246,12 +253,13 @@ class elFinderLibGdBmp
                 }
 
                 extract(unpack(
-                //BITMAPV4HEADER構造体(Windows95以降)
-                //BITMAPV5HEADER構造体(Windows98/2000以降)
-                    "Vred_mask/" .
-                    "Vgreen_mask/" .
-                    "Vblue_mask/" .
-                    "Valpha_mask", $buf . str_repeat("\x00", 120)
+                    //BITMAPV4HEADER構造体(Windows95以降)
+                    //BITMAPV5HEADER構造体(Windows98/2000以降)
+                    'Vred_mask/' .
+                    'Vgreen_mask/' .
+                    'Vblue_mask/' .
+                    'Valpha_mask',
+                    $buf . str_repeat("\x00", 120)
                 ));
             } else {
                 $alpha_mask = $red_mask = $green_mask = $blue_mask = 0;
@@ -270,12 +278,14 @@ class elFinderLibGdBmp
                         $red_mask = 0x7c00;
                         $green_mask = 0x03e0;
                         $blue_mask = 0x001f;
+
                         break;
                     case 24:
                     case 32:
                         $red_mask = 0x00ff0000;
                         $green_mask = 0x0000ff00;
                         $blue_mask = 0x000000ff;
+
                         break;
                 }
             }
@@ -302,6 +312,7 @@ class elFinderLibGdBmp
             if ($buf === false) {
                 return false;
             }
+
             return imagecreatefromstring($buf);
         }
 
@@ -321,14 +332,15 @@ class elFinderLibGdBmp
             //画像データの前にパレットデータがあるのでパレットを作成する
             $palette_size = $header_size == 12 ? 3 : 4; //OS/2形式の場合は x に相当する箇所のデータは最初から確保されていない
             $colors = $clr_used ? $clr_used : pow(2, $bit_count); //色数
-            $palette = array();
+            $palette = [];
             for ($i = 0; $i < $colors; ++$i) {
                 $buf = fread($stream, $palette_size);
                 if ($buf === false) {
                     imagedestroy($img);
+
                     return false;
                 }
-                extract(unpack("Cb/Cg/Cr/Cx", $buf . "\x00"));
+                extract(unpack('Cb/Cg/Cr/Cx', $buf . "\x00"));
                 /**
                  * @var integer $b
                  * @var integer $g
@@ -350,11 +362,13 @@ class elFinderLibGdBmp
                     //変なデータが渡されたとしても最悪なケースで255回程度の無駄なので目を瞑る
                     if ($x < -1 || $x > $width || $y < -1 || $y > $height) {
                         imagedestroy($img);
+
                         return false;
                     }
                     $buf = fread($stream, 1);
                     if ($buf === false) {
                         imagedestroy($img);
+
                         return false;
                     }
                     switch ($buf) {
@@ -362,54 +376,64 @@ class elFinderLibGdBmp
                             $buf = fread($stream, 1);
                             if ($buf === false) {
                                 imagedestroy($img);
+
                                 return false;
                             }
                             switch ($buf) {
                                 case "\x00": //EOL
                                     $y += $line_step;
                                     $x = 0;
+
                                     break;
                                 case "\x01": //EOB
                                     $y = 0;
                                     $x = 0;
+
                                     break 3;
                                 case "\x02": //MOV
                                     $buf = fread($stream, 2);
                                     if ($buf === false) {
                                         imagedestroy($img);
+
                                         return false;
                                     }
-                                    list(, $xx, $yy) = unpack("C2", $buf);
+                                    list(, $xx, $yy) = unpack('C2', $buf);
                                     $x += $xx;
                                     $y += $yy * $line_step;
+
                                     break;
                                 default:     //ABS
-                                    list(, $pixels) = unpack("C", $buf);
+                                    list(, $pixels) = unpack('C', $buf);
                                     $bytes = ($pixels >> $qrt_mod2) + ($pixels & $qrt_mod2);
                                     $buf = fread($stream, ($bytes + 1) & ~1);
                                     if ($buf === false) {
                                         imagedestroy($img);
+
                                         return false;
                                     }
                                     for ($i = 0, $pos = 0; $i < $pixels; ++$i, ++$x, $pos += $bit_count) {
-                                        list(, $c) = unpack("C", $buf[$pos >> 3]);
+                                        list(, $c) = unpack('C', $buf[$pos >> 3]);
                                         $b = $pos & 0x07;
                                         imagesetpixel($img, $x, $y, $palette[($c & ($mask >> $b)) >> ($shift_base - $b)]);
                                     }
+
                                     break;
                             }
+
                             break;
                         default:
                             $buf2 = fread($stream, 1);
                             if ($buf2 === false) {
                                 imagedestroy($img);
+
                                 return false;
                             }
-                            list(, $size, $c) = unpack("C2", $buf . $buf2);
+                            list(, $size, $c) = unpack('C2', $buf . $buf2);
                             for ($i = 0, $pos = 0; $i < $size; ++$i, ++$x, $pos += $bit_count) {
                                 $b = $pos & 0x07;
                                 imagesetpixel($img, $x, $y, $palette[($c & ($mask >> $b)) >> ($shift_base - $b)]);
                             }
+
                             break;
                     }
                 }
@@ -418,12 +442,13 @@ class elFinderLibGdBmp
                     $buf = fread($stream, $line_bytes);
                     if ($buf === false) {
                         imagedestroy($img);
+
                         return false;
                     }
 
                     $pos = 0;
                     for ($x = 0; $x < $width; ++$x, $pos += $bit_count) {
-                        list(, $c) = unpack("C", $buf[$pos >> 3]);
+                        list(, $c) = unpack('C', $buf[$pos >> 3]);
                         $b = $pos & 0x7;
                         imagesetpixel($img, $x, $y, $palette[($c & ($mask >> $b)) >> ($shift_base - $b)]);
                     }
@@ -449,12 +474,13 @@ class elFinderLibGdBmp
                 $buf = fread($stream, $line_bytes);
                 if ($buf === false) {
                     imagedestroy($img);
+
                     return false;
                 }
 
                 $pos = 0;
                 for ($x = 0; $x < $width; ++$x, $pos += $pixel_step) {
-                    list(, $c) = unpack("V", substr($buf, $pos, $pixel_step) . "\x00\x00");
+                    list(, $c) = unpack('V', substr($buf, $pos, $pixel_step) . "\x00\x00");
                     $a_masked = $c & $alpha_mask;
                     $r_masked = $c & $red_mask;
                     $g_masked = $c & $green_mask;
@@ -468,6 +494,7 @@ class elFinderLibGdBmp
             }
             imagealphablending($img, true); //デフォルト値に戻しておく
         }
+
         return $img;
     }
 }

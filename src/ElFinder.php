@@ -64,14 +64,20 @@ class ElFinder
 
     public function registerFilesystemDisk(): void
     {
-        $this->container['config']->set('filesystems.disks.elfinder', [
+        $config = $this->container['config'];
+        $config->set('filesystems.disks.elfinder', [
             'driver' => 'local',
             'root' => $this->getRoot(),
-            'url' => url($this->getBasePath()),
+            'url' => $url = url($basePath = $this->getBasePath()),
             'visibility' => 'public',
         ]);
 
         if (setting('elfinder_replace_default_media', false)) {
+            $config->set([
+                'core.media.media.default_upload_folder' => $basePath,
+                'core.media.media.default_upload_url' => $url,
+            ]);
+
             $this->setDefaultDisk();
         }
     }
