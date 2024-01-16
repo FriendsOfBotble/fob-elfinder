@@ -8,6 +8,7 @@ use Botble\Base\PanelSections\PanelSectionItem;
 use Botble\Base\Supports\ServiceProvider;
 use Botble\Base\Traits\LoadAndPublishDataTrait;
 use Botble\Setting\PanelSections\SettingOthersPanelSection;
+use FriendsOfBotble\ElFinder\Commands\ThumbnailGenerateCommand;
 use FriendsOfBotble\ElFinder\ElFinder;
 use Illuminate\Routing\Events\RouteMatched;
 
@@ -72,6 +73,10 @@ class ElFinderServiceProvider extends ServiceProvider
                     'permissions' => ['elfinder.index'],
                 ]);
         });
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([ThumbnailGenerateCommand::class]);
+        }
     }
 
     public function register(): void
